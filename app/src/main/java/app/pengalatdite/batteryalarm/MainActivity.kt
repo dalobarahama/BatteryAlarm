@@ -8,7 +8,7 @@ import app.pengalatdite.batteryalarm.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
-    private var presenter = MainActivityPresenter()
+    private lateinit var presenter: MainActivityPresenter
 
     companion object {
         const val CHARGING = "Charging"
@@ -24,14 +24,16 @@ class MainActivity : AppCompatActivity() {
                 baseContext.registerReceiver(null, intentFilter)
             }
 
-        if (presenter.getChargingStatus(batteryStatus)) {
+        presenter = MainActivityPresenter(batteryStatus)
+
+        if (presenter.batteryIsCharging()) {
             binding.batteryStatus.text = CHARGING
         } else {
             binding.batteryStatus.text = NOT_CHARGING
         }
 
         binding.batteryPercentage.text =
-            presenter.getChargingPercentage(batteryStatus)?.toInt().toString()
+            presenter.getBatteryChargingPercentage()?.toInt().toString()
 
         setContentView(binding.root)
     }
