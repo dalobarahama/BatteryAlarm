@@ -2,12 +2,19 @@ package app.pengalatdite.batteryalarm
 
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.BatteryManager
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import app.pengalatdite.batteryalarm.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var presenter: MainActivityPresenter
+
+    companion object {
+        const val CHARGING = "Charging"
+        const val NOT_CHARGING = "Not Charging"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding = ActivityMainBinding.inflate(layoutInflater)
@@ -17,13 +24,16 @@ class MainActivity : AppCompatActivity() {
                 baseContext.registerReceiver(null, intentFilter)
             }
 
-        val batteryPercentage: Float? = batteryStatus?.let { intent ->
-            val level: Int = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
-            val scale: Int = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
-            level * 100 / scale.toFloat()
+        presenter = MainActivityPresenter(batteryStatus)
+
+        if (presenter.batteryIsCharging()) {
+            binding.batteryStatus.text = CHARGING
+        } else {
+            binding.batteryStatus.text = NOT_CHARGING
         }
 
-        binding.batteryPercentage.text = batteryPercentage.toString()
+        binding.batteryPercentage.text =
+            presenter.getBatteryChargingPercentage()?.toInt().toString()
 
         setContentView(binding.root)
     }
