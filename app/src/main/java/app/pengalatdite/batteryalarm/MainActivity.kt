@@ -10,7 +10,7 @@ import app.pengalatdite.batteryalarm.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
-    private var presenter = MainActivityPresenter()
+    private lateinit var presenter: MainActivityPresenter
 
     companion object {
         const val CHARGING = "Charging"
@@ -30,8 +30,10 @@ class MainActivity : AppCompatActivity() {
                 baseContext.registerReceiver(null, intentFilter)
             }
 
-        binding.batteryStatus.text = getChargingStatus(batteryStatus)
-        binding.batteryPercentage.text = getBatteryPercentage(batteryStatus)
+        presenter = MainActivityPresenter(batteryStatus)
+
+        binding.batteryStatus.text = getChargingStatus()
+        binding.batteryPercentage.text = getBatteryPercentage()
 
         val sharedPref = this.getPreferences(Context.MODE_PRIVATE) ?: return
         SEEKBAR_SAVED_VALUE =
@@ -40,6 +42,7 @@ class MainActivity : AppCompatActivity() {
         val seek: SeekBar = binding.seekBar
 
         if (SEEKBAR_SAVED_VALUE != 0) {
+            seek.incrementProgressBy(SEEKBAR_SAVED_VALUE)
             binding.seekBarValue.text = SEEKBAR_SAVED_VALUE.toString()
         } else {
             seek.incrementProgressBy(SEEKBAR_INITIAL_VALUE)
@@ -66,15 +69,15 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun getChargingStatus(batteryStatus: Intent?): String {
-        return if (presenter.getChargingStatus(batteryStatus)) {
+    private fun getChargingStatus(): String {
+        return if (presenter.batteryIsCharging()) {
             CHARGING
         } else {
             NOT_CHARGING
         }
     }
 
-    private fun getBatteryPercentage(batteryStatus: Intent?): String {
-        return presenter.getChargingPercentage(batteryStatus)?.toInt().toString()
+    private fun getBatteryPercentage(): String {
+        return presenter.getBatteryChargingPercentage()?.toInt().toString()
     }
 }
