@@ -43,6 +43,17 @@
         app:layout_constraintTop_toBottomOf="@id/battery_status"
         app:layout_constraintVertical_bias="0.1" />
 
+    <TextView
+        android:id="@+id/seek_bar_value"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/seek_bar" />
+
     <RelativeLayout
         android:id="@+id/turn_on_off_layout"
         android:layout_width="match_parent"
@@ -50,7 +61,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/seek_bar"
+        app:layout_constraintTop_toBottomOf="@id/seek_bar_value"
         app:layout_constraintVertical_bias="0.05">
 
         <TextView
