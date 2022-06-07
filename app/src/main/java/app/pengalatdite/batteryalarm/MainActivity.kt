@@ -6,6 +6,9 @@ import android.content.IntentFilter
 import android.os.Bundle
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
+import app.pengalatdite.batteryalarm.SharedPreferences.SEEKBAR_INPUT_VALUE
+import app.pengalatdite.batteryalarm.SharedPreferences.SHARED_PREF
+import app.pengalatdite.batteryalarm.SharedPreferences.SWITCH_VALUE
 import app.pengalatdite.batteryalarm.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -15,6 +18,8 @@ class MainActivity : AppCompatActivity() {
     companion object {
         const val CHARGING = "Charging"
         const val NOT_CHARGING = "Not Charging"
+        const val SWITCH_IS_ON = true
+        const val SWITCH_IS_OFF = false
         const val SEEKBAR_INITIAL_VALUE = 90
         const val SEEKBAR_MAX_VALUE = 100
         var SEEKBAR_SAVED_VALUE = 0
@@ -30,14 +35,14 @@ class MainActivity : AppCompatActivity() {
                 baseContext.registerReceiver(null, intentFilter)
             }
 
-        presenter = MainActivityPresenter(batteryStatus)
+        presenter = MainActivityPresenter(this, batteryStatus)
 
         binding.batteryStatus.text = getChargingStatus()
         binding.batteryPercentage.text = getBatteryPercentage()
 
-        val sharedPref = this.getPreferences(Context.MODE_PRIVATE) ?: return
+        val sharedPref = this.getSharedPreferences(SHARED_PREF, Context.MODE_PRIVATE)
         SEEKBAR_SAVED_VALUE =
-            sharedPref.getInt(getString(R.string.seekbar_input_value), SEEKBAR_INITIAL_VALUE)
+            sharedPref.getInt(SEEKBAR_INPUT_VALUE, SEEKBAR_INITIAL_VALUE)
 
         val seek: SeekBar = binding.seekBar
 
@@ -48,6 +53,7 @@ class MainActivity : AppCompatActivity() {
             seek.incrementProgressBy(SEEKBAR_INITIAL_VALUE)
             binding.seekBarValue.text = SEEKBAR_INITIAL_VALUE.toString()
         }
+
         seek.max = SEEKBAR_MAX_VALUE
         seek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             var barProgress: Int = 0
@@ -62,11 +68,36 @@ class MainActivity : AppCompatActivity() {
 
             override fun onStopTrackingTouch(seekBar: SeekBar?) {
                 with(sharedPref.edit()) {
-                    putInt(getString(R.string.seekbar_input_value), barProgress)
+                    putInt(SEEKBAR_INPUT_VALUE, barProgress)
                     apply()
                 }
             }
         })
+
+        binding.switchOnOff.isChecked = getSwitchStatus()
+        binding.switchOnOff.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                with(sharedPref.edit()) {
+                    putBoolean(SWITCH_VALUE, binding.switchOnOff.isChecked)
+                    putBoolean(SWITCH_VALUE, true)
+                    apply()
+                }
+            } else {
+                with(sharedPref.edit()) {
+                    putBoolean(SWITCH_VALUE, false)
+                    apply()
+                }
+            }
+        }
+
+    }
+
+    private fun getSwitchStatus(): Boolean {
+        return if (presenter.switchIsChecked()) {
+            SWITCH_IS_ON
+        } else {
+            SWITCH_IS_OFF
+        }
     }
 
     private fun getChargingStatus(): String {

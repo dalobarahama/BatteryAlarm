@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">Battery Alarm</string>
     <string name="seekbar_input_value">Seekbar Input Value</string>
+    <string name="switch_value">Switch Value</string>
+    <string name="turn_on_off">Turn On/Off</string>
 
 </resources>

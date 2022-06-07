@@ -4,4 +4,6 @@ interface MainActivityContract {
     fun batteryIsCharging(): Boolean
 
     fun getBatteryChargingPercentage(): Float?
+
+    fun switchIsChecked(): Boolean
 }
