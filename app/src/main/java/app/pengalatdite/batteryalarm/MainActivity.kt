@@ -1,11 +1,16 @@
 package app.pengalatdite.batteryalarm
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.os.Bundle
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import app.pengalatdite.batteryalarm.SharedPreferences.SEEKBAR_INPUT_VALUE
 import app.pengalatdite.batteryalarm.SharedPreferences.SHARED_PREF
 import app.pengalatdite.batteryalarm.SharedPreferences.SWITCH_VALUE
@@ -23,6 +28,8 @@ class MainActivity : AppCompatActivity() {
         const val SEEKBAR_INITIAL_VALUE = 90
         const val SEEKBAR_MAX_VALUE = 100
         var SEEKBAR_SAVED_VALUE = 0
+
+        const val CHANNEL_ID = "1"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,6 +89,7 @@ class MainActivity : AppCompatActivity() {
                     putBoolean(SWITCH_VALUE, true)
                     apply()
                 }
+                notification()
             } else {
                 with(sharedPref.edit()) {
                     putBoolean(SWITCH_VALUE, false)
@@ -89,6 +97,8 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+
+        createNotificationChannel()
 
     }
 
@@ -110,5 +120,32 @@ class MainActivity : AppCompatActivity() {
 
     private fun getBatteryPercentage(): String {
         return presenter.getBatteryChargingPercentage()?.toInt().toString()
+    }
+
+    private fun notification() {
+        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_baseline_notifications_active)
+            .setContentTitle("Battery Manager")
+            .setContentText(getChargingStatus())
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+        with(NotificationManagerCompat.from(this)) {
+            notify(10, builder.build())
+        }
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "Channel Name"
+            val descriptionText = "Channel Description"
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+                description = descriptionText
+            }
+
+            val notificationManager: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
     }
 }
