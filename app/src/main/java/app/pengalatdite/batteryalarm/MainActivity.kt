@@ -7,10 +7,15 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
+import android.os.CountDownTimer
+import android.util.Log
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
+import androidx.work.WorkManager
 import app.pengalatdite.batteryalarm.SharedPreferences.SEEKBAR_INPUT_VALUE
 import app.pengalatdite.batteryalarm.SharedPreferences.SHARED_PREF
 import app.pengalatdite.batteryalarm.SharedPreferences.SWITCH_VALUE
@@ -89,7 +94,7 @@ class MainActivity : AppCompatActivity() {
                     putBoolean(SWITCH_VALUE, true)
                     apply()
                 }
-                notification()
+                countDown()
             } else {
                 with(sharedPref.edit()) {
                     putBoolean(SWITCH_VALUE, false)
@@ -98,7 +103,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        createNotificationChannel()
+//        createNotificationChannel()
 
     }
 
@@ -111,6 +116,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getChargingStatus(): String {
+        Log.d("MainActivity", "getChargingStatus: ${presenter.batteryIsCharging()}")
         return if (presenter.batteryIsCharging()) {
             CHARGING
         } else {
@@ -147,5 +153,28 @@ class MainActivity : AppCompatActivity() {
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
+    }
+
+    private fun worker() {
+        val request = OneTimeWorkRequestBuilder<CountDownWorker>()
+            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+            .build()
+
+        WorkManager.getInstance(this)
+            .enqueue(request)
+    }
+
+    private fun countDown() {
+        Log.d("Timer", "countDown: $SEEKBAR_SAVED_VALUE")
+        object : CountDownTimer(((SEEKBAR_SAVED_VALUE * 1000).toLong()), 1000) {
+            override fun onTick(p0: Long) {
+                Log.d("Timer", "onTick: $p0")
+            }
+
+            override fun onFinish() {
+                Log.d("Timer", "Finished")
+                notification()
+            }
+        }.start()
     }
 }
